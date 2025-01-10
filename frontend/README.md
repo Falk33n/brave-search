@@ -37,20 +37,21 @@ cd frontend
 ```
 
 2. Install dependencies:
-   2.1 Using Bun:
 
-```bash
-bun install
-```
+> 2.1 Using Bun:
 
-2.2 Using NPM:
+> ```bash
+> bun install
+> ```
 
-```bash
-npm install
-```
+> 2.2 Using NPM:
 
-2.3 Using Yarn:
+> ```bash
+> npm install
+> ```
 
-```bash
-yarn install
-```
+> 2.3 Using Yarn:
+
+> ```bash
+> yarn install
+> ```
