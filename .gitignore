@@ -1,4 +1,56 @@
+### Shared ###
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# IDE/editor files
+.vscode/
+.idea/
+
 ### Backend ###
+
+# Python Bytecode files
+/backend/app/__pycache__/
+/backend/app/*.py[cod]
+
+# Env
+/backend/app/.env
+/backend/app/.env/
+/backend/app/.env.*
+/backend/app/!.env.example
+/backend/app/!.env.test
+
+# Conda environments
+/backend/*.conda
+/backend/*.ipynb_checkpoints
+
+# Virtual environment
+/backend/venv/
+/backend/env/
+/backend/ENV/
+/backend/.venv/
+
+# IDE/editor files
+/backend/.vscode/
+/backend/.idea/
+
+# System files
+/backend/.DS_Store
+/backend/Thumbs.db
+
+# FastAPI specific files
+/backend/*.db
+
+# Logs
+/backend/*.log
+
 
 ### Frontend ###
 
@@ -26,3 +78,7 @@
 # Vite
 /frontend/vite.config.js.timestamp-*
 /frontend/vite.config.ts.timestamp-*
+
+# IDE/editor files
+/frontend/.vscode/
+/frontend/.idea/

@@ -1,4 +1,4 @@
-# Page Crawler App
+# Page Crawler
 
 This is a simple web crawler application built using **FastAPI** and **BeautifulSoup4**. It allows users to input a URL, crawl the page, and index the content without following any inner links. This app can be used as a starting point for building more advanced crawlers.
 
@@ -75,11 +75,11 @@ page_crawler/
 │   ├── __init__.py        # Marks the directory as a Python package
 │   ├── main.py            # FastAPI app with route definitions
 │   ├── crawler.py         # The crawler logic and functions
+│   ├── .env               # Environment variables configuration
 │   └── utils.py           # Helper functions for parsing or processing data (optional)
 ├── requirements.txt       # List of required Python packages
-├── environment.yml        # Conda environment configuration (if using Conda)
 ├── README.md              # Project overview and documentation
-└── .gitignore             # (Optional) Git ignore configuration
+└── .gitignore             # Git ignore configuration
 ```
 
 ### 7. License
