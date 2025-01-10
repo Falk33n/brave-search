@@ -1,3 +1,9 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+h3 {
+	font-weight: 700;
+	font-size: 1rem;
+	margin: 0.7rem 0 0.5rem;
+}

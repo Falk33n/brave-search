@@ -13,24 +13,31 @@
 		"lint": "prettier --check . && eslint ."
 	},
 	"devDependencies": {
-		"@types/eslint-config-prettier": "^6.11.3",
 		"@eslint/compat": "^1.2.4",
 		"@sveltejs/adapter-auto": "^3.3.1",
 		"@sveltejs/kit": "^2.15.1",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
+		"@types/eslint-config-prettier": "^6.11.3",
+		"@types/markdown-it": "^14.1.2",
 		"autoprefixer": "^10.4.20",
 		"eslint": "^9.17.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.46.1",
 		"globals": "^15.14.0",
+		"highlight.js": "^11.11.1",
+		"markdown-it": "^14.1.0",
+		"marked": "^15.0.6",
+		"openai": "^4.77.3",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.2",
 		"prettier-plugin-tailwindcss": "^0.6.9",
 		"svelte": "^5.16.5",
 		"svelte-check": "^4.1.1",
+		"svelte-markdown": "^0.4.1",
 		"tailwindcss": "^3.4.17",
 		"typescript": "^5.7.2",
 		"typescript-eslint": "^8.19.1",
-		"vite": "^6.0.7"
+		"vite": "^6.0.7",
+		"zod": "^3.24.1"
 	}
 }

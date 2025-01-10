@@ -1,23 +1,28 @@
-node_modules
+### Backend ###
+
+### Frontend ###
+
+# Packages
+/frontend/node_modules
 
 # Output
-.output
-.vercel
-.netlify
-.wrangler
-/.svelte-kit
-/build
+/frontend/.output
+/frontend/.vercel
+/frontend/.netlify
+/frontend/.wrangler
+/frontend/.svelte-kit
+/frontend/build
 
 # OS
-.DS_Store
-Thumbs.db
+/frontend/.DS_Store
+/frontend/Thumbs.db
 
 # Env
-.env
-.env.*
-!.env.example
-!.env.test
+/frontend/.env
+/frontend/.env.*
+/frontend/!.env.example
+/frontend/!.env.test
 
 # Vite
-vite.config.js.timestamp-*
-vite.config.ts.timestamp-*
+/frontend/vite.config.js.timestamp-*
+/frontend/vite.config.ts.timestamp-*

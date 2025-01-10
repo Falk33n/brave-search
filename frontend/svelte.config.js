@@ -8,9 +8,9 @@ export default {
 		adapter: adapter(),
 		alias: {
 			'$src/*': 'src/*',
-			'$lib/*': 'src/lib/*'
-		}
+			'$lib/*': 'src/lib/*',
+		},
 	},
 	include: ['./src/**/*.js', './src/**/*.ts', './src/**/*.svelte'],
-	exclude: ['./node_modules/**', './**']
+	exclude: ['./node_modules/**', './**'],
 };
