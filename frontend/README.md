@@ -40,18 +40,18 @@ cd frontend
 
 &nbsp;&nbsp;2.1 Using Bun:
 
-&nbsp;&nbsp;`bash
-&nbsp;&nbsp;bun install
-&nbsp;&nbsp;`
+```bash
+bun install
+```
 
 &nbsp;&nbsp;2.2 Using NPM:
 
-&nbsp;&nbsp;`bash
-&nbsp;&nbsp;npm install
-&nbsp;&nbsp;`
+```bash
+npm install
+```
 
 &nbsp;&nbsp;2.3 Using Yarn:
 
-&nbsp;&nbsp;`bash
-&nbsp;&nbsp;yarn install
-&nbsp;&nbsp;`
+```bash
+yarn install
+```
