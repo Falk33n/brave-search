@@ -4,10 +4,6 @@
 
 # Env
 /app/.env
-/app/.env/
-/app/.env.*
-/app/!.env.example
-/app/!.env.test
 
 # Conda environments
 *.conda

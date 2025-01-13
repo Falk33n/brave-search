@@ -2,6 +2,17 @@
 
 This is a simple web crawler application built using **FastAPI** and **BeautifulSoup4**. It allows users to input a URL, crawl the page, and index the content without following any inner links. This app can be used as a starting point for building more advanced crawlers.
 
+## Table of Contents
+
+1. [Clone the repository](#1-clone-the-repository)
+2. [Setup Instructions](#2-set-up-python-312)
+3. [Install Dependencies](#3-install-dependencies)
+4. [Run the App](#4-run-the-app)
+5. [Usage](#5-usage)
+6. [Folder Structure](#6-folder-structure)
+7. [Contributing](#7-contributing)
+8. [License](#8-license)
+
 ## Prerequisites
 
 Before you begin, ensure that you have the following installed:
@@ -70,7 +81,7 @@ To use the page crawler app:
 Here’s an overview of the project structure:
 
 ```bash
-page_crawler/
+backend/
 ├── app/
 │   ├── __init__.py        # Marks the directory as a Python package
 │   ├── main.py            # FastAPI app with route definitions
@@ -79,9 +90,14 @@ page_crawler/
 │   └── utils.py           # Helper functions for parsing or processing data (optional)
 ├── requirements.txt       # List of required Python packages
 ├── README.md              # Project overview and documentation
+├── LICENSE.md             # License information
 └── .gitignore             # Git ignore configuration
 ```
 
-### 7. License
+### 7. Contributing
+
+Feel free to fork the repository, create issues, or submit pull requests. Contributions are welcome!
+
+### 8. License
 
 This project is open-source and available under the [MIT License](https://opensource.org/licenses/MIT).
