@@ -2,6 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from fastapi import HTTPException
+from app.utils import format_markdown
+from app.utils import is_url_valid
+import time
+from datetime import datetime
+import random
+
+MIN_DELAY = 1
+MAX_DELAY = 3
 
 def fetch_page(url: str):
     try:
@@ -11,72 +19,88 @@ def fetch_page(url: str):
     except requests.RequestException as error:
         raise HTTPException(status_code=500, detail=f"Failed to fetch page: {error}")
 
-def format_markdown(element: BeautifulSoup, element_type: str):
-    if element_type == 'h1':
-        return f"# {element.get_text()}"
-    elif element_type == 'h2':
-        return f"## {element.get_text()}"
-    elif element_type == 'h3':
-        return f"### {element.get_text()}"
-    elif element_type == 'h4':
-        return f"#### {element.get_text()}"
-    elif element_type == 'h5':
-        return f"##### {element.get_text()}"
-    elif element_type == 'h6':
-        return f"###### {element.get_text()}"
-    elif element_type == 'p':
-        return element.get_text()
-    elif element_type == 'li':
-        return f"- {element.get_text()}"
-    elif element_type == 'blockquote':
-        return f"> {element.get_text()}"
-    elif element_type == 'a':
-        href = element.get('href', '#')
-        return f"[{element.get_text()}]({href})"
-    elif element_type == 'ul':
-        return "\n".join([f"- {li.get_text()}" for li in element.find_all('li')])
-    elif element_type == 'ol':
-        return "\n".join([f"{idx}. {li.get_text()}" for idx, li in enumerate(element.find_all('li'), start=1)])
-    return ""
-
-def parse_page_to_markdown(html_content: str):
+def parse_page_content(url: str):
     try:
+        html_content = fetch_page(url)
         parsed_html = BeautifulSoup(html_content, 'html.parser')
+        title = parsed_html.title.get_text() if parsed_html.title else "No title"
 
-        for tag in parsed_html(['script', 'style', 'noscript', 'meta', 'head', 'link']):
+        for tag in parsed_html(['script', 'noscript', 'head']):
             tag.decompose()
 
             extracted_markdown = []
-            relevant_elements = ['p', 'div', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'blockquote', 'ul', 'ol', 'a', 'article', 'section', 'header', 'footer', 'main', 'nav', 'aside', 'strong', 'em', 'b', 'i', 'code', 'pre', 'mark', 'abbr', 'del', 'ins', 'time', 'label', 'fieldset', 'legend', 'summary', 'address', 'table', 'tr', 'td', 'th', 'caption', 'form', 'input', 'textarea', 'button']
+            relevant_elements = ['p', 'div', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'a']
 
         for relevant_element in relevant_elements:
             elements = parsed_html.find_all(relevant_element)
+
             for element in elements:
                 extracted_markdown.append(format_markdown(element, relevant_element).strip())
 
-        return "\n\n".join(extracted_markdown)
+        return {"title": title, "content": "\n\n".join(extracted_markdown)}
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"Failed to parse page content: {error}")
     
-def retrieve_page_urls(html_content: str, url: str):
+def parse_website_content(url: str, visited_urls=None, depth=6) -> list:
+    if visited_urls is None:
+        visited_urls = set()
+    if depth == 0 or url in visited_urls:
+        return []
+
+    visited_urls.add(url)
+    page_metadata = parse_page_content(url)
+
+    metadata = {
+        "url": url,
+        "title": page_metadata["title"],
+        "word_count": len(page_metadata["content"].split()),
+        "last_crawled": datetime.now().strftime("%Y-%m-%d"),
+        "depth": depth
+    }
+
+    time.sleep(random.uniform(MIN_DELAY, MAX_DELAY))
+
+    if not is_crawling_allowed(url):
+        raise HTTPException(status_code=403, detail=f"Crawling disallowed for {url}")
+
+    urls = retrieve_page_urls(url)
+    crawled_data = [{"content": page_metadata["content"], "metadata": metadata}]
+    
+    print(f"Crawled one page: {url}")
+
+    for link in urls:
+        if link not in visited_urls and is_url_valid(link):
+            print(f"Next URL to crawl: {link}")
+            crawled_data.extend(parse_website_content(link, visited_urls, depth-1))
+
+    return crawled_data
+    
+def retrieve_page_urls(url: str):
     try:
+        html_content = fetch_page(url)
         parsed_html = BeautifulSoup(html_content, 'html.parser')
         parsed_url = urlparse(url)
-        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
-        for tag in parsed_html(['script', 'style', 'noscript', 'meta', 'head', 'link']):
+        for tag in parsed_html(['script', 'noscript', 'head']):
             tag.decompose()
 
         link_urls = [url]
         elements = parsed_html.find_all('a')
+
         for element in elements:
             link_url = element.get('href')
+
             if link_url:
-                resolved_url = urljoin(base_url, link_url)
-                link_urls.append(resolved_url)
+                if '#' in link_url or link_url.startswith('./') or link_url.startswith('../'):
+                    continue
+
+                resolved_url = urljoin(url, link_url)
+                resolved_netloc = urlparse(resolved_url).netloc
+
+                if resolved_netloc == parsed_url.netloc:
+                    link_urls.append(resolved_url)
 
         return link_urls
-
     except Exception as error:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve URLs: {error}")
 
@@ -95,6 +119,7 @@ def is_crawling_allowed(url: str):
 
             for line in lines:
                 line = line.strip()
+
                 if line.startswith("User-agent:"):
                     current_user_agent = line.split(":", 1)[1].strip()
                     rules[current_user_agent] = {"Allow": [], "Disallow": []}
@@ -111,8 +136,9 @@ def is_crawling_allowed(url: str):
                 for disallow_path in matched_rules["Disallow"]:
                     if disallow_path == "": 
                         continue
-                    if url.startswith(urljoin(base_url, disallow_path)):
+                    elif url.startswith(urljoin(base_url, disallow_path)):
                         return False
+                    
                 for allow_path in matched_rules["Allow"]:
                     if url.startswith(urljoin(base_url, allow_path)):
                         return True
@@ -122,4 +148,5 @@ def is_crawling_allowed(url: str):
     except requests.RequestException as error:
         if error.response.status_code in [404, 400, 307]:
             return True
+        
         return False

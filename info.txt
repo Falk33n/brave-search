@@ -1,2 +1,0 @@
-fix maybe bold text in readmes
-fix the table of contents in the root readme

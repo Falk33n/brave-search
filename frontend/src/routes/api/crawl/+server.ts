@@ -37,7 +37,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			throw error(500, 'Error fetching crawl data');
 		}
 
-		const crawlContent: string = await crawlResponse.json();
+		const crawlResponseData: { title: string; content: string } =
+			await crawlResponse.json();
 
 		const openaiResponse = await openai.chat.completions.create({
 			model: 'gpt-4o-mini',
@@ -46,7 +47,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				...chatHistory.slice(0, -1),
 				{
 					role: 'user',
-					content: `The context was: "${chatHistory[chatHistory.length - 1].content}", Here is the content retrieved from the crawled webpage in Markdown format: ${crawlContent}
+					content: `The context was: "${chatHistory[chatHistory.length - 1].content}", Here is the content retrieved from the crawled webpage in Markdown format: ${crawlResponseData.content}
         `,
 				},
 			],

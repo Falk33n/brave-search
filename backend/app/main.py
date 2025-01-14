@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from app.crawler import fetch_page, parse_page_to_markdown, retrieve_page_urls, is_crawling_allowed
+from app.crawler import fetch_page, parse_website_content, parse_page_content, retrieve_page_urls, is_crawling_allowed
 from app.utils import is_url_valid
 from pydantic import BaseModel
 
@@ -10,22 +10,27 @@ class CrawlRequest(BaseModel):
 
 @app.post("/crawl-page")
 async def crawl_page(request: CrawlRequest) -> str:
-    url = request.url
-    if not is_url_valid(url):
+    if not is_url_valid(request.url):
         raise HTTPException(status_code=400, detail="Invalid URL format")
-    elif not is_crawling_allowed(url):
+    elif not is_crawling_allowed(request.url):
         raise HTTPException(status_code=400, detail="URL is not crawlable")
     
-    html_content = fetch_page(url)
-    return parse_page_to_markdown(html_content)
+    return parse_page_content(request.url)
 
 @app.post("/crawl-urls")
-async def crawl_page(request: CrawlRequest):
-    url = request.url
-    if not is_url_valid(url):
+async def crawl_urls(request: CrawlRequest):
+    if not is_url_valid(request.url):
         raise HTTPException(status_code=400, detail="Invalid URL format")
-    elif not is_crawling_allowed(url):
+    elif not is_crawling_allowed(request.url):
         raise HTTPException(status_code=400, detail="URL is not crawlable")
     
-    html_content = fetch_page(url)
-    return retrieve_page_urls(html_content, url)
+    return retrieve_page_urls(request.url)
+
+@app.post("/crawl-website")
+async def crawl_website(request: CrawlRequest, depth: int = 2) -> list:
+    if not is_url_valid(request.url):
+        raise HTTPException(status_code=400, detail="Invalid URL format")
+    elif not is_crawling_allowed(request.url):
+        raise HTTPException(status_code=400, detail="URL is not crawlable")
+    
+    return parse_website_content(request.url, depth=depth)
