@@ -18,7 +18,6 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 
 		if (!parsedRequest.success) {
-			console.log(parsedRequest.error.errors);
 			throw error(400, `${parsedRequest.error.errors}`);
 		}
 

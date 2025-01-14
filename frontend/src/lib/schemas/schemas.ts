@@ -21,6 +21,7 @@ export type ChatHistory = Zod.infer<typeof chatHistorySchema>;
 export const chatRequestSchema = z.object({
 	searchParams: searchParamsSchema.optional(),
 	chatHistory: chatHistorySchema,
+	indexUrl: z.string().url('Index URL is not valid.').optional(),
 });
 
 export type ChatRequest = Zod.infer<typeof chatRequestSchema>;

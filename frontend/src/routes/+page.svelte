@@ -4,6 +4,7 @@
 >
 	import type { ChatHistory } from '$lib/schemas';
 	import hljs from 'highlight.js';
+	import 'highlight.js/styles/default.css';
 	import MarkdownIt from 'markdown-it';
 
 	type SubmitEventWithTarget = SubmitEvent & {
@@ -19,7 +20,7 @@
 	const md = new MarkdownIt({
 		highlight: function (str: string, lang: string): string {
 			if (lang && hljs.getLanguage(lang)) {
-				return `<pre><code class="hljs">${hljs.highlight(str, { language: lang, ignoreIllegals: true }).value}</code></pre>`;
+				return `<pre><code class="hljs ${lang}">${hljs.highlight(str, { language: lang, ignoreIllegals: true }).value}</code></pre>`;
 			}
 
 			return `<pre><code class="hljs">${md.utils.escapeHtml(str)}</code></pre>`;
@@ -30,14 +31,19 @@
 		e.preventDefault();
 
 		const query = inputValue;
+		const urlRegex = /(https?:\/\/[^\s]+)/g;
+		const foundUrls = query.match(urlRegex);
+		const indexUrl = foundUrls ? foundUrls[0] : undefined;
+
 		inputValue = '';
 		disabled = true;
 		chatHistory.push({ role: 'user', content: query });
 
 		try {
-			const response = await fetch('/api/chat-provider', {
+			const response = await fetch('/api/chat/provider', {
 				body: JSON.stringify({
 					searchParams: { query },
+					indexUrl,
 					chatHistory,
 				}),
 				headers: { 'Content-Type': 'application/json' },
@@ -50,7 +56,7 @@
 
 			chatHistory.push({ ...(await response.json()) });
 		} catch (error) {
-			throw new Error(`Client Error: ${error}`);
+			console.log(error);
 		} finally {
 			disabled = false;
 		}
@@ -123,6 +129,13 @@
 		}
 		& strong {
 			font-weight: 600;
+		}
+		& hr {
+			margin: 0.9rem;
+		}
+		& code {
+			white-space: pre-wrap;
+			background-color: blanchedalmond;
 		}
 	}
 </style>
