@@ -45,9 +45,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			throw error(500, 'Error fetching OpenAI data');
 		}
 
-		let responseData: Chat | undefined;
-
 		const baseUrl = new URL(request.url).origin;
+		let responseData: Chat | undefined;
 
 		if (openaiResponse === 'chat') {
 			const chatResponse = await fetch(`${baseUrl}/api/chat`, {

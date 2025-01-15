@@ -85,12 +85,14 @@ backend/
 ├── app/
 │   ├── __init__.py        # Marks the directory as a Python package
 │   ├── main.py            # FastAPI app with route definitions
-│   ├── crawler.py         # The crawler logic and functions
+│   ├── crawl.py           # The crawler logic and functions
 │   ├── .env               # Environment variables configuration
+│   ├── db.py              # ChromaDB logic and functions
+│   ├── constants.py       # Constants
 │   └── utils.py           # Helper functions for parsing or processing data (optional)
 ├── requirements.txt       # List of required Python packages
 ├── README.md              # Project overview and documentation
-├── LICENSE.md             # License information
+├── LICENSE                # License information
 └── .gitignore             # Git ignore configuration
 ```
 

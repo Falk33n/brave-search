@@ -1,6 +1,8 @@
 import type { SearchParamsRequest } from '$lib/schemas';
 
-export function getSearchParamsConfig(searchParams: SearchParamsRequest) {
+export function getSearchParamsConfig(
+	searchParams: SearchParamsRequest,
+): Record<string, string> {
 	const {
 		freshness,
 		count,
@@ -12,7 +14,7 @@ export function getSearchParamsConfig(searchParams: SearchParamsRequest) {
 		...restSearchParams
 	} = searchParams;
 
-	const config: Record<string, string> = {
+	return {
 		q: searchParams.query,
 		...(count !== undefined && { count: count.toString() }),
 		...(offset !== undefined && { offset: offset.toString() }),
@@ -38,6 +40,4 @@ export function getSearchParamsConfig(searchParams: SearchParamsRequest) {
 		...(summary !== undefined && { summary: summary ? '1' : '0' }),
 		...restSearchParams,
 	};
-
-	return config;
 }

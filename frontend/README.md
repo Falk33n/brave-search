@@ -110,11 +110,15 @@ frontend/
 │   ├── routes/
 │   │   ├── api/
 │   │   │   ├── chat/
+│   │   │   │   ├── provider/
+│   │   │   │   │   └── +server.ts                # Server logic for chat provider API
 │   │   │   │   └── +server.ts                    # Server logic for chat API
-│   │   │   ├── search/
-│   │   │   │   └── +server.ts                    # Server logic for search API
-│   │   │   └── chat-provider/
-│   │   │       └── +server.ts                    # Server logic for chat provider API
+│   │   │   ├── crawl/
+│   │   │   │   ├── provider/
+│   │   │   │   │   └── +server.ts                # Server logic for crawl provider API
+│   │   │   │   └── +server.ts                    # Server logic for crawl API
+│   │   │   └── search/
+│   │   │       └── +server.ts                    # Server logic for search API
 │   │   ├── +layout.svelte                        # Layout for the application
 │   │   └── +page.svelte                          # Main page of the app (Home)
 │   ├── app.css                                   # Global CSS styles
@@ -127,7 +131,7 @@ frontend/
 ├── tailwind.config.ts                            # Tailwind CSS configuration
 ├── svelte.config.js                              # SvelteKit configuration
 ├── README.md                                     # Project documentation
-├── LICENSE.MD                                    # License information
+├── LICENSE                                       # License information
 ├── postcss.config.js                             # PostCSS configuration for CSS processing
 ├── package.json                                  # Package dependencies and scripts
 ├── bun.lockb                                     # Bun lock file (dependency manager)
