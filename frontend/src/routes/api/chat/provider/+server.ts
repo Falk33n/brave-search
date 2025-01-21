@@ -6,7 +6,7 @@ import OpenAI from 'openai';
 const OPENAI_SYSTEM_PROMPT = {
 	role: 'system',
 	content:
-		'Analyze the following query and determine how to respond: 1. If the user has provided a URL (e.g., "https://...") and the query suggests the user wants information from that specific URL, respond with "crawl". 2. If the query requires retrieving information from the web, but no specific URL is mentioned, respond with "search". 3. If the query can be answered with existing knowledge or prior content without needing a web search or crawl, respond with "chat".',
+		'Analyze the following query and determine how to respond: 1. If the user has provided a URL (e.g., "https://...") and the query suggests the user wants information from that specific URL, respond with "crawl". 2. If the query includes a URL and the user is asking for queried collections or specific data from a database linked to that URL, respond with "query". 3. If the query requires retrieving information from the web, but no specific URL is mentioned, respond with "search". 4. If the query can be answered with existing knowledge or prior content without needing a web search or crawl, respond with "chat".',
 } as const;
 
 const openai = new OpenAI({ apiKey: SECRET_OPENAI_KEY });
@@ -40,7 +40,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (
 			openaiResponse !== 'search' &&
 			openaiResponse !== 'chat' &&
-			openaiResponse !== 'crawl'
+			openaiResponse !== 'crawl' &&
+			openaiResponse !== 'query'
 		) {
 			throw error(500, 'Error fetching OpenAI data');
 		}
@@ -107,6 +108,28 @@ export const POST: RequestHandler = async ({ request }) => {
 			}
 
 			responseData = { ...(await crawlResponse.json()) };
+		} else if (openaiResponse === 'query') {
+			if (!indexUrl) {
+				throw error(400, 'Bad request for /api/query endpoint');
+			}
+
+			const queryResponse = await fetch(`${baseUrl}/api/query`, {
+				body: JSON.stringify({
+					chatHistory,
+					indexUrl,
+				}),
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+			});
+
+			if (!queryResponse.ok) {
+				throw error(
+					500,
+					'Error fetching chat response from /api/query endpoint',
+				);
+			}
+
+			responseData = { ...(await queryResponse.json()) };
 		}
 
 		if (!responseData) {

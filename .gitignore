@@ -14,60 +14,41 @@ Thumbs.db
 ### Backend ###
 
 # Python Bytecode files
-/backend/app/__pycache__/
-/backend/app/*.py[cod]
-
-# Env
-/backend/app/.env
+__pycache__/
+*.py[cod]
 
 # Conda environments
-/backend/*.conda
-/backend/*.ipynb_checkpoints
+*.conda
+*.ipynb_checkpoints
 
-# Virtual environment
-/backend/venv/
-/backend/env/
-/backend/ENV/
-/backend/.venv/
-
-# IDE/editor files
-/backend/.vscode/
-/backend/.idea/
-
-# System files
-/backend/.DS_Store
-/backend/Thumbs.db
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
 
 # FastAPI specific files
-/backend/*.db
+*.db
+
+# Chroma DB Local Storage
+chroma
 
 # Logs
-/backend/*.log
+*.log
 
 ### Frontend ###
 
 # Packages
-/frontend/node_modules
+node_modules
 
 # Output
-/frontend/.output
-/frontend/.vercel
-/frontend/.netlify
-/frontend/.wrangler
-/frontend/.svelte-kit
-/frontend/build
-
-# OS
-/frontend/.DS_Store
-/frontend/Thumbs.db
-
-# Env
-/frontend/.env
+.output
+.vercel
+.netlify
+.wrangler
+.svelte-kit
+build
 
 # Vite
-/frontend/vite.config.js.timestamp-*
-/frontend/vite.config.ts.timestamp-*
-
-# IDE/editor files
-/frontend/.vscode/
-/frontend/.idea/
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*

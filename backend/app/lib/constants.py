@@ -22,8 +22,7 @@ Constants:
   - CRAWLING_NOT_ALLOWED_ERROR (str): Error message for URLs that are not crawlable.
 
 - Crawler Settings:
-  - MIN_CRAWL_DELAY (int): Minimum delay (in seconds) between crawl requests.
-  - MAX_CRAWL_DELAY (int): Maximum delay (in seconds) between crawl requests.
+  - CRAWL_DELAY (int): Delay (in seconds) between crawl requests.
   - FETCH_TIMEOUT (int): Timeout (in seconds) for fetching resources.
 
 Usage:
@@ -42,13 +41,6 @@ FORBIDDEN = 403
 OK = 200
 BAD_REQUEST = 400
 
-CRAWLING_DISALLOWED_ERROR = "Crawling is disallowed for url:"
-PARSE_PAGE_ERROR = "Failed to parse page content:"
-RETRIEVE_URLS_ERROR = "Failed to retrieve URLs:"
-INVALID_URL_ERROR = "Invalid URL format"
-CRAWLING_NOT_ALLOWED_ERROR = "URL is not crawlable"
-
-MIN_CRAWL_DELAY = 1
-MAX_CRAWL_DELAY = 3
+CRAWL_DELAY = 1
 
 FETCH_TIMEOUT = 10

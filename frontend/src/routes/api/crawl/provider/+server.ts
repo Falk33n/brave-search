@@ -1,4 +1,8 @@
-import { SECRET_BACKEND_URL, SECRET_OPENAI_KEY } from '$env/static/private';
+import {
+	SECRET_BACKEND_HOST,
+	SECRET_BACKEND_PORT,
+	SECRET_OPENAI_KEY,
+} from '$env/static/private';
 import { chatRequestSchema, type Chat } from '$lib/schemas';
 import { error, json, type RequestHandler } from '@sveltejs/kit';
 import OpenAI from 'openai';
@@ -20,11 +24,14 @@ async function crawlAndValidateUrls(
 		return null;
 	}
 
-	const crawlUrlsResponse = await fetch(`${SECRET_BACKEND_URL}/crawl-urls`, {
-		body: JSON.stringify({ url: currentUrl }),
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-	});
+	const crawlUrlsResponse = await fetch(
+		`http://${SECRET_BACKEND_HOST}:${SECRET_BACKEND_PORT}/crawl/urls`,
+		{
+			body: JSON.stringify({ url: currentUrl }),
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+		},
+	);
 
 	if (!crawlUrlsResponse.ok) {
 		throw error(500, 'Error fetching crawl URLs data');

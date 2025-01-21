@@ -1,4 +1,8 @@
-import { SECRET_BACKEND_URL, SECRET_OPENAI_KEY } from '$env/static/private';
+import {
+	SECRET_BACKEND_HOST,
+	SECRET_BACKEND_PORT,
+	SECRET_OPENAI_KEY,
+} from '$env/static/private';
 import { chatRequestSchema } from '$lib/schemas';
 import { error, json, type RequestHandler } from '@sveltejs/kit';
 import OpenAI from 'openai';
@@ -27,11 +31,14 @@ export const POST: RequestHandler = async ({ request }) => {
 			throw error(400, `No index url provided`);
 		}
 
-		const crawlResponse = await fetch(`${SECRET_BACKEND_URL}/crawl-page`, {
-			body: JSON.stringify({ url: indexUrl }),
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-		});
+		const crawlResponse = await fetch(
+			`http://${SECRET_BACKEND_HOST}:${SECRET_BACKEND_PORT}/crawl/page`,
+			{
+				body: JSON.stringify({ url: indexUrl }),
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+			},
+		);
 
 		if (!crawlResponse.ok) {
 			throw error(500, 'Error fetching crawl data');

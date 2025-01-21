@@ -1,9 +1,9 @@
 # Python Bytecode files
-/app/__pycache__/
-/app/*.py[cod]
+__pycache__/
+*.py[cod]
 
 # Env
-/app/.env
+.env
 
 # Conda environments
 *.conda
@@ -22,6 +22,9 @@ ENV/
 # System files
 .DS_Store
 Thumbs.db
+
+# Chroma DB Local Storage
+chroma
 
 # FastAPI specific files
 *.db

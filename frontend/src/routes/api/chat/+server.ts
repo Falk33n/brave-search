@@ -24,7 +24,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		const { chatHistory } = parsedRequest.data;
 
 		const openaiResponse = await openai.chat.completions.create({
-			model: 'gpt-4o-mini',
+			model: 'o1',
 			messages: [OPENAI_SYSTEM_PROMPT, ...chatHistory],
 		});
 

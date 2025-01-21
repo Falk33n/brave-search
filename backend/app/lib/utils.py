@@ -7,8 +7,6 @@ Functions:
 
 - is_url_valid(url: str): Validates whether the given URL matches a standard format for HTTP, 
   HTTPS, or FTP URLs.
-- format_markdown(element: BeautifulSoup, element_type: str): Converts an HTML element into its 
-  corresponding Markdown format (e.g., headings, paragraphs, links, lists).
 - get_base_url(url: str): Extracts the base URL (scheme and netloc) from a given URL.
 - get_html_content(url: str): Fetches the HTML content of a given URL.
 - get_crawling_rules(robots_content: str): Parses a `robots.txt` file to extract the crawling rules.
@@ -29,14 +27,13 @@ from urllib.parse import urljoin, urlparse
 from re import match
 from bs4 import BeautifulSoup
 import requests
+from requests import RequestException
 from fastapi import HTTPException
-from app.constants import (
+from app.lib.constants import (
     OK,
     FETCH_TIMEOUT,
     INTERNAL_SERVER_ERROR,
     FORBIDDEN,
-    CRAWLING_NOT_ALLOWED_ERROR,
-    INVALID_URL_ERROR,
     BAD_REQUEST,
 )
 
@@ -56,56 +53,6 @@ def is_url_valid(url: str):
 
     regex = r"^(?:http|ftp)s?://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+(/[^ ]*)?$"
     return match(regex, url) is not None
-
-
-def format_markdown(element: BeautifulSoup, element_type: str):
-    """
-    Converts a given HTML element into its corresponding Markdown format based on its type.
-
-    This function takes a BeautifulSoup element and its type (such as heading, paragraph, link,
-    or list) and converts it to the appropriate Markdown syntax. It supports headings (h1 to h6),
-    paragraphs, links, and unordered/ordered lists.
-
-    Parameters:
-    - element (BeautifulSoup): The BeautifulSoup element representing the HTML content to
-      be formatted.
-    - element_type (str): The type of HTML element (e.g., "h1", "h2", "p", "a", "ul", "ol").
-
-    Returns:
-    - str: The element's content formatted as a Markdown string.
-    """
-
-    element_text = element.get_text()
-    markdown = ""
-
-    if element_type == "h1":
-        markdown = f"# {element_text}"
-    elif element_type == "h2":
-        markdown = f"## {element_text}"
-    elif element_type == "h3":
-        markdown = f"### {element_text}"
-    elif element_type == "h4":
-        markdown = f"#### {element_text}"
-    elif element_type == "h5":
-        markdown = f"##### {element_text}"
-    elif element_type == "h6":
-        markdown = f"###### {element_text}"
-    elif element_type == "p":
-        markdown = element_text
-    elif element_type == "a":
-        href = element.get("href", "#")
-        markdown = f"[{element_text}]({href})"
-    elif element_type == "ul":
-        markdown = "\n".join([f"- {li.get_text()}" for li in element.find_all("li")])
-    elif element_type == "ol":
-        markdown = "\n".join(
-            [
-                f"{idx}. {li.get_text()}"
-                for idx, li in enumerate(element.find_all("li"), start=1)
-            ]
-        )
-
-    return markdown.strip()
 
 
 def get_base_url(url: str):
@@ -149,8 +96,9 @@ def get_html_content(url: str):
 
     try:
         response = requests.get(url, timeout=FETCH_TIMEOUT)
-        return response.raise_for_status().text
-    except requests.RequestException as error:
+        response.raise_for_status()
+        return response.text
+    except RequestException as error:
         raise HTTPException(
             status_code=INTERNAL_SERVER_ERROR, detail=f"Failed to fetch page: {error}"
         ) from error
@@ -226,29 +174,19 @@ def is_crawling_allowed(url: str):
 
         if response.status_code == OK:
             rules = get_crawling_rules(response.text)
-            matched_rules = rules.get("*", {"Allow": [], "Disallow": []})
-            disallow_paths = matched_rules["Disallow"]
-            allow_paths = matched_rules["Allow"]
+            disallow_paths = rules.get("Disallow", [])
 
-            disallow = [
-                url.startswith(urljoin(base_url, disallow_path))
-                for disallow_path in disallow_paths
-            ]
-
-            allow = [
-                url.startswith(urljoin(base_url, allow_path))
-                for allow_path in allow_paths
-            ]
-
-            if any(disallow):
-                return False
-            if any(allow):
+            if not disallow_paths:
                 return True
+
+            for disallow_path in disallow_paths:
+                if disallow_path in url:
+                    return False
 
             return True
 
         return True
-    except requests.RequestException:
+    except RequestException:
         return True
 
 
@@ -264,9 +202,9 @@ def validate_url(url: str):
     """
 
     if not is_url_valid(url):
-        raise HTTPException(status_code=BAD_REQUEST, detail=INVALID_URL_ERROR)
+        raise HTTPException(status_code=BAD_REQUEST, detail="Invalid URL format")
     if not is_crawling_allowed(url):
-        raise HTTPException(status_code=FORBIDDEN, detail=CRAWLING_NOT_ALLOWED_ERROR)
+        raise HTTPException(status_code=FORBIDDEN, detail="URL is not crawlable")
 
 
 def remove_unwanted_tags(parsed_html: BeautifulSoup):
@@ -289,6 +227,121 @@ def remove_unwanted_tags(parsed_html: BeautifulSoup):
         tag.decompose()
 
 
+def format_markdown_headings(element_type: str, element_text: str):
+    markdown = ""
+
+    if element_type == "h1":
+        markdown = f"# {element_text}"
+    elif element_type == "h2":
+        markdown = f"## {element_text}"
+    elif element_type == "h3":
+        markdown = f"### {element_text}"
+    elif element_type == "h4":
+        markdown = f"#### {element_text}"
+    elif element_type == "h5":
+        markdown = f"##### {element_text}"
+    elif element_type == "h6":
+        markdown = f"###### {element_text}"
+
+    return markdown
+
+
+def format_markdown_lists(element: BeautifulSoup, element_type: str):
+    markdown = ""
+
+    if element_type in ["ul", "ol"]:
+        li_elements = element.find_all("li")
+        list_markdown = []
+        list_type_markdown = "-"
+
+        for i, li in enumerate(li_elements):
+            li_text = li.get_text().strip()
+
+            if element_type == "ol":
+                list_type_markdown = f"{i + 1}."
+
+            if li_text:
+                list_markdown.append(f"{list_type_markdown} {li_text}")
+
+        markdown = "\n".join(list_markdown)
+
+    return markdown
+
+
+def format_markdown_tables(element: BeautifulSoup, element_type: str):
+    markdown = ""
+
+    if element_type == "table":
+        rows = element.find_all("tr")
+        table_markdown = []
+
+        for i, row in enumerate(rows):
+            cells = row.find_all(["th", "td"])
+            cell_texts = [cell.get_text(strip=True) for cell in cells]
+
+            if i == 0:
+                table_markdown.append("| " + " | ".join(cell_texts) + " |")
+                table_markdown.append(
+                    "| " + " | ".join("---" for _ in cell_texts) + " |"
+                )
+            else:
+                table_markdown.append("| " + " | ".join(cell_texts) + " |")
+
+        markdown = "\n".join(table_markdown)
+
+    return markdown
+
+
+def format_markdown(element: BeautifulSoup, url: str):
+    """
+    Converts a given HTML element into its corresponding Markdown format based on its type.
+
+    This function takes a BeautifulSoup element and its type (such as heading, paragraph, link,
+    or list) and converts it to the appropriate Markdown syntax. It supports headings (h1 to h6),
+    paragraphs, links, and unordered/ordered lists.
+
+    Parameters:
+    - element (BeautifulSoup): The BeautifulSoup element representing the HTML content to
+      be formatted.
+    - element_type (str): The type of HTML element (e.g., "h1", "h2", "p", "a", "ul", "ol").
+
+    Returns:
+    - str: The element's content formatted as a Markdown string.
+    """
+
+    element_text = element.get_text().strip()
+    element_type = element.name
+    markdown = ""
+    heading_elements = ["h1", "h2", "h3", "h4", "h5", "h6"]
+
+    if element_type == "table":
+        markdown = format_markdown_tables(element, element_type)
+    elif element_type in heading_elements:
+        markdown = format_markdown_headings(element_type, element_text)
+    elif element_type in ["ol", "ul"]:
+        markdown = format_markdown_lists(element, element_type)
+    elif element_type == "a":
+        base_url = get_base_url(url)
+        resolved_url = urljoin(base_url, element.get("href"))
+        markdown = f"[{element_text}]({resolved_url})"
+    elif element_type in ["p", "span", "div", "sup", "sub"]:
+        markdown = element_text
+    elif element_type in ["strong", "b"]:
+        markdown = f"**{element_text}**"
+    elif element_type in ["em", "i"]:
+        markdown = f"*{element_text}*"
+    elif element_type == "blockquote":
+        markdown = f"> {element_text}"
+    elif element_type in ["del", "s"]:
+        markdown = f"~~{element_text}~~"
+    elif element_type == "pre":
+        markdown = f"```\n{element_text}\n```"
+    elif element_type == "code":
+        markdown = f"`{element_text}`"
+
+    return markdown.strip()
+
+
 def get_parsed_html(url: str):
     """
     Fetches and parses the HTML content of the given URL.
@@ -304,3 +357,28 @@ def get_parsed_html(url: str):
     """
 
     return BeautifulSoup(get_html_content(url), "html.parser")
+
+
+def chunk_text(text: str, chunk_size: int = 1000, overlap: float = 0.1):
+    """
+    Split text into chunks of a specified size with a given percentage of overlap.
+
+    Parameters:
+        text (str): The text to chunk.
+        chunk_size (int): The number of words per chunk.
+        overlap (float): The percentage of overlap between consecutive chunks.
+
+    Returns:
+        List[str]: A list of text chunks.
+    """
+    words = text.split()
+    overlap_size = int(chunk_size * overlap)
+    chunks = []
+
+    for i in range(0, len(words), chunk_size - overlap_size):
+        chunk = " ".join(words[i : i + chunk_size])
+        chunks.append(chunk)
+        if i + chunk_size >= len(words):
+            break
+
+    return chunks
