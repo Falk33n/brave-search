@@ -6,6 +6,7 @@ export {
 	chatHistorySchema,
 	chatRequestSchema,
 	chatSchema,
+	searchRequestSchema,
 	type Chat,
 	type ChatHistory,
 	type ChatRequest,

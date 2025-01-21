@@ -24,4 +24,9 @@ export const chatRequestSchema = z.object({
 	indexUrl: z.string().url('Index URL is not valid.').optional(),
 });
 
+export const searchRequestSchema = z.object({
+	searchParams: searchParamsSchema,
+	chatHistory: chatHistorySchema,
+});
+
 export type ChatRequest = Zod.infer<typeof chatRequestSchema>;

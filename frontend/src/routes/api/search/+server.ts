@@ -1,41 +1,46 @@
-import { SECRET_BACKEND_HOST } from '$env/static/private';
-import { chatRequestSchema } from '$lib/schemas';
+import { SECRET_BACKEND_HOST, SECRET_BACKEND_PORT } from '$env/static/private';
+import { searchRequestSchema } from '$lib/schemas';
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR, OK } from '$lib/server/constants';
 import { error, json, type RequestHandler } from '@sveltejs/kit';
 
-export const POST: RequestHandler = async ({ request }) => {
-	try {
-		const parsedRequest = chatRequestSchema.safeParse({
-			...(await request.json()),
-		});
+type SearchProps = Zod.infer<typeof searchRequestSchema>;
 
-		if (!parsedRequest.success) {
-			throw error(400, `${parsedRequest.error.errors}`);
-		}
+async function parseRequest(request: Request): Promise<SearchProps> {
+	const jsonRequest: SearchProps = await request.json();
+	const parsedRequest = searchRequestSchema.safeParse({
+		...jsonRequest,
+	});
 
-		const { searchParams, chatHistory } = parsedRequest.data;
-
-		if (!searchParams) {
-			throw error(500, 'No search params provided');
-		}
-
-		const braveResponse = await fetch(`${SECRET_BACKEND_HOST}/search`, {
-			body: JSON.stringify({ query: searchParams.query, chatHistory }),
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-		});
-
-		if (!braveResponse.ok) {
-			throw error(
-				500,
-				`Error fetching brave data: ${braveResponse.statusText}`,
-			);
-		}
-
-		return json(
-			{ role: 'assistant', content: await braveResponse.json() },
-			{ status: 200 },
-		);
-	} catch (e) {
-		throw error(500, `Error: ${e}`);
+	if (!parsedRequest.success) {
+		const requestErrors = parsedRequest.error.errors;
+		error(BAD_REQUEST, `Error parsing request: ${requestErrors}`);
 	}
+
+	return parsedRequest.data;
+}
+
+const BACKEND_BASE_URL = `http://${SECRET_BACKEND_HOST}:${SECRET_BACKEND_PORT}`;
+
+async function fetchBackend({ searchParams, chatHistory }: SearchProps) {
+	const response = await fetch(`${BACKEND_BASE_URL}/search`, {
+		body: JSON.stringify({ query: searchParams.query, chatHistory }),
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+	});
+
+	if (!response.ok) {
+		error(
+			INTERNAL_SERVER_ERROR,
+			`Error fetching brave data: ${response.statusText}`,
+		);
+	}
+
+	return response;
+}
+
+export const POST: RequestHandler = async ({ request }) => {
+	const { searchParams, chatHistory } = await parseRequest(request);
+	const response = await fetchBackend({ searchParams, chatHistory });
+	const responseData = await response.json();
+	return json({ role: 'assistant', content: responseData }, { status: OK });
 };
